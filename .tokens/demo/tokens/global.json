@@ -1,0 +1,29 @@
+{
+  "Primary": {
+    "value": "#000",
+    "type": "color"
+  },
+  "red": {
+    "value": "#444",
+    "type": "color"
+  },
+  "aa": {
+    "value": "4px",
+    "type": "spacing"
+  },
+  "hero section": {
+    "value": {
+      "minWidth": "8",
+      "maxWidth": "8"
+    },
+    "type": "composition"
+  },
+  "border 1": {
+    "value": {
+      "color": "#711818",
+      "width": "8",
+      "style": "solid"
+    },
+    "type": "border"
+  }
+}

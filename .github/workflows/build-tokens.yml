@@ -1,0 +1,39 @@
+name: Build Tokens
+
+on:
+  push:
+    paths:
+      - tokens.json
+      - demo/tokens.json
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check changed files
+        id: diff
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
+          echo "root=$(echo "$CHANGED" | grep -q '^tokens.json$' && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+          echo "demo=$(echo "$CHANGED" | grep -q '^demo/tokens.json$' && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      - name: Build tokens.json
+        if: steps.diff.outputs.root == 'true'
+        run: npm run build -- tokens.json
+
+      - name: Build demo/tokens.json
+        if: steps.diff.outputs.demo == 'true'
+        run: npm run build -- demo/tokens.json
