@@ -1,0 +1,21 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --primary: #000000;
+  --red: #aaddaa;
+  --aa: 4px;
+  --hero-section-min-width: 8;
+  --hero-section-max-width: 8;
+  --border-1-color: #711818;
+  --border-1-width: 8px;
+  --border-1-style: solid;
+  --sm: 12px;
+  --ekino-sm: 4px;
+  --ccifv-sm: 4px;
+  --composition-1-min-width: 14px; /** test composition */
+  --composition-1-height: 560; /** test composition */
+  --light-primary: 8px;
+  --light-secondary: 12px;
+}

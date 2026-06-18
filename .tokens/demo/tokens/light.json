@@ -1,0 +1,20 @@
+{
+  "red": {
+    "value": "#ada",
+    "type": "color"
+  },
+  "light": {
+    "primary": {
+      "value": "8",
+      "type": "spacing"
+    },
+    "secondary": {
+      "value": "12",
+      "type": "spacing"
+    }
+  },
+  "sm": {
+    "value": "12",
+    "type": "spacing"
+  }
+}

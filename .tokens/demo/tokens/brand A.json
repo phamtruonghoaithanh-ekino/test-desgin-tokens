@@ -1,0 +1,10 @@
+{
+  "Primary": {
+    "value": "#fff",
+    "type": "color"
+  },
+  "sm": {
+    "value": "20",
+    "type": "spacing"
+  }
+}

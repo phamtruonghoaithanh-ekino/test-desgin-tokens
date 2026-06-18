@@ -1,0 +1,22 @@
+{
+  "sm": {
+    "value": "8px",
+    "type": "spacing"
+  },
+  "ekino - sm": {
+    "value": "4",
+    "type": "spacing"
+  },
+  "ccifv-sm": {
+    "value": "4",
+    "type": "spacing"
+  },
+  "Composition 1": {
+    "value": {
+      "minWidth": "14px",
+      "height": "560"
+    },
+    "description": "test composition",
+    "type": "composition"
+  }
+}
