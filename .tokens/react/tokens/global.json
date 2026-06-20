@@ -1,0 +1,89 @@
+{
+  "color": {
+    "brand": {
+      "primary": {
+        "value": "#0066FF",
+        "type": "color",
+        "description": "Primary brand color"
+      },
+      "secondary": {
+        "value": "#FF6600",
+        "type": "color",
+        "description": "Secondary brand color"
+      }
+    },
+    "neutral": {
+      "0": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "900": {
+        "value": "#111827",
+        "type": "color"
+      }
+    }
+  },
+  "spacing": {
+    "sm": {
+      "value": "8px",
+      "type": "spacing"
+    },
+    "md": {
+      "value": "16px",
+      "type": "spacing"
+    },
+    "lg": {
+      "value": "24px",
+      "type": "spacing"
+    }
+  },
+  "radius": {
+    "sm": {
+      "value": "4px",
+      "type": "borderRadius"
+    },
+    "md": {
+      "value": "8px",
+      "type": "borderRadius"
+    }
+  },
+  "button": {
+    "border": {
+      "value": {
+        "color": "{color.brand.primary}",
+        "width": "1px",
+        "style": "solid"
+      },
+      "type": "border",
+      "description": "Example border token that can export as shorthand or individual variables"
+    }
+  },
+  "component": {
+    "button": {
+      "primary": {
+        "value": {
+          "backgroundColor": "{color.brand.primary}",
+          "color": "{color.neutral.0}",
+          "paddingX": "{spacing.md}",
+          "paddingY": "8px",
+          "borderRadius": "{radius.sm}",
+          "fontWeight": "600"
+        },
+        "type": "composition",
+        "description": "Primary button style"
+      },
+      "secondary": {
+        "value": {
+          "backgroundColor": "{color.brand.secondary}",
+          "color": "{color.neutral.900}",
+          "paddingX": "{spacing.md}",
+          "paddingY": "{spacing.sm}",
+          "borderRadius": "{radius.md}",
+          "border": "{button.border}"
+        },
+        "type": "composition",
+        "description": "Secondary button style with a border reference"
+      }
+    }
+  }
+}

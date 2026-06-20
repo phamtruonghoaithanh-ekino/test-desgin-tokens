@@ -1,0 +1,24 @@
+{
+  "Primary Color": {
+    "value": "#000000",
+    "type": "color",
+    "description": "Example of a non-recommended exported token name"
+  },
+  "hero section": {
+    "value": {
+      "minWidth": "320px",
+      "maxWidth": "1200px"
+    },
+    "type": "composition",
+    "description": "Flat composition token with spaces in the token name"
+  },
+  "border 1": {
+    "value": {
+      "color": "#711818",
+      "width": "8px",
+      "style": "solid"
+    },
+    "type": "border",
+    "description": "Flat border token with spaces in the token name"
+  }
+}

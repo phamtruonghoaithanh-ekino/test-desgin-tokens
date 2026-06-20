@@ -1,0 +1,39 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --color-brand-primary: #0066ff; /** Primary brand color */
+  --color-brand-secondary: #ff6600; /** Secondary brand color */
+  --color-neutral-0: #ffffff;
+  --color-neutral-900: #111827;
+  --color-surface-default: #ffffff;
+  --color-surface-subtle: #f8fafc;
+  --color-text-default: #111827;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --button-border-color: #0066ff; /** Example border token that can export as shorthand or individual variables */
+  --button-border-width: 1px; /** Example border token that can export as shorthand or individual variables */
+  --button-border-style: solid; /** Example border token that can export as shorthand or individual variables */
+  --component-button-primary-background-color: #0066ff; /** Primary button style */
+  --component-button-primary-color: #ffffff; /** Primary button style */
+  --component-button-primary-padding-x: 16px; /** Primary button style */
+  --component-button-primary-padding-y: 8px; /** Primary button style */
+  --component-button-primary-border-radius: 4px; /** Primary button style */
+  --component-button-primary-font-weight: 600; /** Primary button style */
+  --component-button-secondary-background-color: #ff6600; /** Secondary button style with a border reference */
+  --component-button-secondary-color: #111827; /** Secondary button style with a border reference */
+  --component-button-secondary-padding-x: 16px; /** Secondary button style with a border reference */
+  --component-button-secondary-padding-y: 8px; /** Secondary button style with a border reference */
+  --component-button-secondary-border-radius: 8px; /** Secondary button style with a border reference */
+  --component-button-secondary-border-color: #0066ff; /** Secondary button style with a border reference */
+  --component-button-secondary-border-width: 1px; /** Secondary button style with a border reference */
+  --component-button-secondary-border-style: solid; /** Secondary button style with a border reference */
+  --component-card-default-background-color: #ffffff; /** Light theme card composition */
+  --component-card-default-color: #111827; /** Light theme card composition */
+  --component-card-default-padding: 24px; /** Light theme card composition */
+  --component-card-default-border-radius: 8px; /** Light theme card composition */
+}
