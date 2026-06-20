@@ -121,9 +121,16 @@ jobs:
             esac
 
             local tmp_dir
+            local push_args
             tmp_dir="$(mktemp -d)"
+            push_args=()
 
-            if ! git clone --depth 1 --branch "$branch" "$auth_repository" "$tmp_dir/repo"; then
+            if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
+              git clone --depth 1 --branch "$merge_target_branch" "$auth_repository" "$tmp_dir/repo"
+              git -C "$tmp_dir/repo" fetch --depth 1 origin "$branch:refs/remotes/origin/$branch" || true
+              git -C "$tmp_dir/repo" switch -c "$branch"
+              push_args=(--force-with-lease)
+            elif ! git clone --depth 1 --branch "$branch" "$auth_repository" "$tmp_dir/repo"; then
               git clone --depth 1 "$auth_repository" "$tmp_dir/repo"
               git -C "$tmp_dir/repo" switch --orphan "$branch"
               git -C "$tmp_dir/repo" rm -rf . || true
@@ -145,7 +152,7 @@ jobs:
             fi
 
             git -C "$tmp_dir/repo" commit -m "Build design tokens for $name"
-            git -C "$tmp_dir/repo" push "$auth_repository" "$branch"
+            git -C "$tmp_dir/repo" push "${push_args[@]}" "$auth_repository" "$branch"
 
             if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
               create_merge_request "$name" "$provider" "$repository" "$branch" "$merge_target_branch"
@@ -219,8 +226,8 @@ jobs:
               return 0
             fi
 
-            if [ "$status" = "422" ]; then
-              echo "GitHub pull request was not created, likely because one already exists."
+            if [ "$status" = "422" ] && grep -qi "pull request already exists" "$response"; then
+              echo "GitHub pull request was not created because one already exists."
               cat "$response"
               return 0
             fi
