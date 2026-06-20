@@ -122,14 +122,21 @@ jobs:
 
             local tmp_dir
             local push_args
+            local remote_branch_sha
             tmp_dir="$(mktemp -d)"
             push_args=()
+            remote_branch_sha=""
 
             if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
               git clone --depth 1 --branch "$merge_target_branch" "$auth_repository" "$tmp_dir/repo"
               git -C "$tmp_dir/repo" fetch --depth 1 origin "$branch:refs/remotes/origin/$branch" || true
               git -C "$tmp_dir/repo" switch -c "$branch"
-              push_args=(--force-with-lease)
+              remote_branch_sha="$(git -C "$tmp_dir/repo" rev-parse "refs/remotes/origin/$branch" 2>/dev/null || true)"
+              if [ -n "$remote_branch_sha" ]; then
+                push_args=(--force-with-lease="refs/heads/$branch:$remote_branch_sha")
+              else
+                push_args=(--force-with-lease)
+              fi
             elif ! git clone --depth 1 --branch "$branch" "$auth_repository" "$tmp_dir/repo"; then
               git clone --depth 1 "$auth_repository" "$tmp_dir/repo"
               git -C "$tmp_dir/repo" switch --orphan "$branch"
@@ -142,7 +149,14 @@ jobs:
             fi
 
             mkdir -p "$destination"
-            find "$destination" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            if [ -z "$target_path" ]; then
+              find "$destination" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            else
+              for item in "$source_dir"/* "$source_dir"/.[!.]* "$source_dir"/..?*; do
+                [ -e "$item" ] || continue
+                rm -rf "$destination/$(basename "$item")"
+              done
+            fi
             cp -a "$source_dir"/. "$destination"/
 
             git -C "$tmp_dir/repo" add -A
@@ -152,7 +166,7 @@ jobs:
             fi
 
             git -C "$tmp_dir/repo" commit -m "Build design tokens for $name"
-            git -C "$tmp_dir/repo" push "${push_args[@]}" "$auth_repository" "$branch"
+            git -C "$tmp_dir/repo" push "${push_args[@]}" "$auth_repository" "$branch:refs/heads/$branch"
 
             if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
               create_merge_request "$name" "$provider" "$repository" "$branch" "$merge_target_branch"
