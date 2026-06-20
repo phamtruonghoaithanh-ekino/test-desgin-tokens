@@ -1,0 +1,16 @@
+{
+  "color": {
+    "brand": {
+      "primary": {
+        "value": "#0F766E",
+        "type": "color",
+        "description": "Brand A primary color override"
+      },
+      "secondary": {
+        "value": "#F59E0B",
+        "type": "color",
+        "description": "Brand A secondary color override"
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "color": {
+    "surface": {
+      "default": {
+        "value": "#111827",
+        "type": "color"
+      },
+      "subtle": {
+        "value": "#1F2937",
+        "type": "color"
+      }
+    },
+    "text": {
+      "default": {
+        "value": "#F9FAFB",
+        "type": "color"
+      }
+    }
+  },
+  "component": {
+    "card": {
+      "default": {
+        "value": {
+          "backgroundColor": "{color.surface.default}",
+          "color": "{color.text.default}",
+          "padding": "{spacing.lg}",
+          "borderRadius": "{radius.md}"
+        },
+        "type": "composition",
+        "description": "Dark theme card composition"
+      }
+    }
+  }
+}
