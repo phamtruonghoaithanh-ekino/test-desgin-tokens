@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+deploy_build() {
+  local name="$1"
+  local source_dir="$2"
+  local provider="${3:-github}"
+  local repository="$4"
+  local branch="${5:-main}"
+  local target_path="$6"
+  local merge_target_branch="${7:-}"
+  local create_merge_request="${8:-false}"
+
+  if [ -z "$repository" ]; then
+    echo "Skipping $name deploy because target repository is not configured."
+    return 0
+  fi
+
+  if [ -z "${DEPLOY_TOKEN:-}" ]; then
+    echo "DESIGN_TOKENS_DEPLOY_TOKEN is required to deploy $name."
+    return 1
+  fi
+
+  if [ ! -d "$source_dir" ]; then
+    echo "Build output directory does not exist: $source_dir"
+    return 1
+  fi
+
+  git config --global user.name "github-actions[bot]"
+  git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+  echo "::add-mask::$DEPLOY_TOKEN"
+
+  local auth_repository="$repository"
+  case "$provider" in
+    github)
+      if [[ "$repository" != http* ]]; then
+        repository="https://github.com/$repository.git"
+      fi
+      auth_repository="${repository/https:\/\//https:\/\/x-access-token:$DEPLOY_TOKEN@}"
+      ;;
+    gitlab)
+      if [[ "$repository" != http* ]]; then
+        repository="https://gitlab.com/$repository.git"
+      fi
+      auth_repository="${repository/https:\/\//https:\/\/oauth2:$DEPLOY_TOKEN@}"
+      ;;
+    *)
+      echo "Unsupported target provider for $name: $provider"
+      return 1
+      ;;
+  esac
+
+  local tmp_dir
+  local push_args
+  local remote_branch_sha
+  tmp_dir="$(mktemp -d)"
+  push_args=()
+  remote_branch_sha=""
+
+  if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
+    git clone --depth 1 --branch "$merge_target_branch" "$auth_repository" "$tmp_dir/repo"
+    git -C "$tmp_dir/repo" fetch --depth 1 origin "$branch:refs/remotes/origin/$branch" || true
+    git -C "$tmp_dir/repo" switch -c "$branch"
+    remote_branch_sha="$(git -C "$tmp_dir/repo" rev-parse "refs/remotes/origin/$branch" 2>/dev/null || true)"
+    if [ -n "$remote_branch_sha" ]; then
+      push_args=(--force-with-lease="refs/heads/$branch:$remote_branch_sha")
+    else
+      push_args=(--force-with-lease)
+    fi
+  elif ! git clone --depth 1 --branch "$branch" "$auth_repository" "$tmp_dir/repo"; then
+    git clone --depth 1 "$auth_repository" "$tmp_dir/repo"
+    git -C "$tmp_dir/repo" switch --orphan "$branch"
+    git -C "$tmp_dir/repo" rm -rf . || true
+  fi
+
+  local destination="$tmp_dir/repo"
+  if [ -n "$target_path" ]; then
+    destination="$tmp_dir/repo/$target_path"
+  fi
+
+  mkdir -p "$destination"
+  if [ -z "$target_path" ]; then
+    find "$destination" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+  else
+    for item in "$source_dir"/* "$source_dir"/.[!.]* "$source_dir"/..?*; do
+      [ -e "$item" ] || continue
+      rm -rf "$destination/$(basename "$item")"
+    done
+  fi
+  cp -a "$source_dir"/. "$destination"/
+
+  git -C "$tmp_dir/repo" add -A
+  if git -C "$tmp_dir/repo" diff --cached --quiet; then
+    echo "No $name build changes to deploy."
+    return 0
+  fi
+
+  git -C "$tmp_dir/repo" commit -m "Build design tokens for $name"
+  git -C "$tmp_dir/repo" push "${push_args[@]}" "$auth_repository" "$branch:refs/heads/$branch"
+
+  if [ "$create_merge_request" = "true" ] && [ -n "$merge_target_branch" ]; then
+    create_merge_request "$name" "$provider" "$repository" "$branch" "$merge_target_branch"
+  fi
+}
+
+repository_slug() {
+  local repository="$1"
+  repository="${repository#https://github.com/}"
+  repository="${repository#https://gitlab.com/}"
+  repository="${repository%.git}"
+  echo "$repository"
+}
+
+create_merge_request() {
+  local name="$1"
+  local provider="$2"
+  local repository="$3"
+  local source_branch="$4"
+  local target_branch="$5"
+  local slug
+  local title
+  local body
+
+  slug="$(repository_slug "$repository")"
+  title="Build design tokens for $name"
+  body="Automated design token build from $GITHUB_REPOSITORY@$GITHUB_SHA."
+
+  case "$provider" in
+    github)
+      create_github_pull_request "$slug" "$source_branch" "$target_branch" "$title" "$body"
+      ;;
+    gitlab)
+      create_gitlab_merge_request "$slug" "$source_branch" "$target_branch" "$title" "$body"
+      ;;
+    *)
+      echo "Unsupported target provider for merge request: $provider"
+      return 1
+      ;;
+  esac
+}
+
+create_github_pull_request() {
+  local slug="$1"
+  local source_branch="$2"
+  local target_branch="$3"
+  local title="$4"
+  local body="$5"
+  local response
+  local status
+
+  response="$(mktemp)"
+  status="$(
+    jq -n \
+      --arg title "$title" \
+      --arg head "$source_branch" \
+      --arg base "$target_branch" \
+      --arg body "$body" \
+      '{title: $title, head: $head, base: $base, body: $body}' |
+    curl --silent --show-error --output "$response" --write-out "%{http_code}" \
+      --request POST \
+      --header "Authorization: Bearer $DEPLOY_TOKEN" \
+      --header "Accept: application/vnd.github+json" \
+      --header "X-GitHub-Api-Version: 2022-11-28" \
+      --data @- \
+      "https://api.github.com/repos/$slug/pulls"
+  )"
+
+  if [ "$status" = "201" ]; then
+    echo "Created GitHub pull request for $slug: $source_branch -> $target_branch"
+    return 0
+  fi
+
+  if [ "$status" = "422" ] && grep -qi "pull request already exists" "$response"; then
+    echo "GitHub pull request was not created because one already exists."
+    cat "$response"
+    return 0
+  fi
+
+  echo "Failed to create GitHub pull request. HTTP status: $status"
+  cat "$response"
+  return 1
+}
+
+create_gitlab_merge_request() {
+  local slug="$1"
+  local source_branch="$2"
+  local target_branch="$3"
+  local title="$4"
+  local body="$5"
+  local project_id
+  local response
+  local status
+
+  project_id="${slug//\//%2F}"
+  response="$(mktemp)"
+  status="$(
+    jq -n \
+      --arg title "$title" \
+      --arg source_branch "$source_branch" \
+      --arg target_branch "$target_branch" \
+      --arg description "$body" \
+      '{title: $title, source_branch: $source_branch, target_branch: $target_branch, description: $description}' |
+    curl --silent --show-error --output "$response" --write-out "%{http_code}" \
+      --request POST \
+      --header "PRIVATE-TOKEN: $DEPLOY_TOKEN" \
+      --header "Content-Type: application/json" \
+      --data @- \
+      "https://gitlab.com/api/v4/projects/$project_id/merge_requests"
+  )"
+
+  if [ "$status" = "201" ]; then
+    echo "Created GitLab merge request for $slug: $source_branch -> $target_branch"
+    return 0
+  fi
+
+  if [ "$status" = "409" ]; then
+    echo "GitLab merge request was not created because one already exists."
+    cat "$response"
+    return 0
+  fi
+
+  echo "Failed to create GitLab merge request. HTTP status: $status"
+  cat "$response"
+  return 1
+}
+
+deploy_build "$@"
