@@ -13,6 +13,9 @@ npm run build -- react/tokens.json
 The GitHub Actions workflow builds only the token file that changed, then can
 push that build output into another GitHub or GitLab repository.
 
+See [Build Tokens Workflow](docs/BUILD_TOKENS_WORKFLOW.md) for the full workflow
+flow, deploy behavior, and split-job guidance.
+
 Create this secret:
 
 ```text
