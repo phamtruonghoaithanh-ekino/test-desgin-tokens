@@ -40,6 +40,16 @@ async function buildSingle(sources, destination) {
   await sd.buildAllPlatforms();
 }
 
+function formatThemeFilename(name) {
+  const slug = String(name)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `vars-${slug || "theme"}.css`;
+}
+
 if ($themes) {
   const tmpDir = `.tokens/${source.replace(/\.[^/.]+$/, "")}`;
   await rm(tmpDir, { recursive: true, force: true });
@@ -62,7 +72,7 @@ if ($themes) {
     }
 
     const sources = enabledSets.map((name) => `${tmpDir}/${name}.json`);
-    const dest = `vars-${theme.name}.css`;
+    const dest = formatThemeFilename(theme.name);
 
     await buildSingle(sources, dest);
   }
