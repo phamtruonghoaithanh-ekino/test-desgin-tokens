@@ -191,8 +191,8 @@ Each theme selects which token sets are active for that theme.
 The build script reads each theme and creates a separate CSS file:
 
 ```text
-CCIFV → build/demo/css/vars-CCIFV.css
-Ekino → build/demo/css/vars-Ekino.css
+CCIFV → build/demo/css/vars-ccifv.css
+Ekino → build/demo/css/vars-ekino.css
 ```
 
 ### `selectedTokenSets`
